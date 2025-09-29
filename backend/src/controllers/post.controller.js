@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 import { getAuth } from "@clerk/express";
 import cloudinary from "../config/cloudinary.js";
 import Notification from "../models/notification.model.js";
+import Comment from "../models/comment.model.js";
 
 export const getPosts = expressAsyncHandler(async (req, res) => {
   const posts = await Post.find()
@@ -135,20 +136,23 @@ export const likePost = expressAsyncHandler(async (req, res) => {
 
 export const deletePost = expressAsyncHandler(async (req, res) => {
   const { userId } = getAuth(req);
-  const { postId } - req.params;
+  const { postId } = req.params;
 
   const user = await User.findOne({ clerkId: userId });
   const post = await Post.findById(post);
 
-  if (!user || !post) return res.status(404).json({ error: 'user or post not found' });
+  if (!user || !post)
+    return res.status(404).json({ error: "user or post not found" });
 
-  if(post.user.toString() !== user._id.toString()) {
-    return res.status(403).json({ error: 'you can only delete your own posts' });
+  if (post.user.toString() !== user._id.toString()) {
+    return res
+      .status(403)
+      .json({ error: "you can only delete your own posts" });
   }
 
   await Comment.deleteMany({ post: postId });
 
   await Post.findByIdAndDelete(postId);
 
-  res.status(200).json({message: 'post deleted successfully'})
-})
+  res.status(200).json({ message: "post deleted successfully" });
+});
